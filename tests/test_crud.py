@@ -106,7 +106,7 @@ async def test_delete_submenu(ac: AsyncClient):
     res = await ac.get('/api/v1/menus/{menu_id}/submenus/')
     assert res.json() == []
 
-
+@pytest.mark.asyncio
 async def test_delete_menu(ac: AsyncClient):
     global menu_id
     response = await ac.delete(f'/api/v1/menus/{menu_id}')
