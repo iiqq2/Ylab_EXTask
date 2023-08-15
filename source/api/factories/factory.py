@@ -13,7 +13,7 @@ class RepositoryFactory:
                                                      'submenu': SubMenuRepository, 'dish': DishRepository}
 
     @classmethod
-    def create(cls, name: str, db: Session) -> BaseRepository:
+    async def create(cls, name: str, db: Session) -> BaseRepository:
         if name in cls.repositories:
             return cls.repositories[name](db)
         raise ValueError('Repository not found: %s' % name)

@@ -3,9 +3,9 @@ services:
   db:
     image: postgres:15.1-alpine
     environment:
-      POSTGRES_PASSWORD: "${TEST_DB_PASSWORD}"
-      POSTGRES_USER: "${TEST_DB_USER}"
-      POSTGRES_DB: "${TEST_DB_NAME}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      POSTGRES_USER: "${DB_USER}"
+      POSTGRES_DB: "${DB_NAME}"
     container_name: ylab_db
     restart: always
     ports:
@@ -22,7 +22,7 @@ services:
     env_file:
       - .env-dev
     container_name: ylab_app
-    command: sh -c "alembic upgrade head && gunicorn api:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000"
+    command: sh -c "alembic upgrade head && gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000"
     depends_on:
       - db
   redis:
