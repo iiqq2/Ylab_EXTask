@@ -10,7 +10,7 @@ class MenuRepository(BaseRepository):
 
     model = Menu
 
-    async def get_all(self) -> list:
+    async def get_all(self) -> list[dict[str, str]]:
         res = await self.db.execute(select(self.model))
         menus = res.unique().scalars().all()
         menus_list = [
@@ -42,7 +42,7 @@ class MenuRepository(BaseRepository):
         ]
         return menus_list
 
-    async def get(self, menu_id: UUID) -> dict | None:
+    async def get(self, menu_id: UUID) -> dict[str, str] | None:
         menu = await self.db.get(self.model, menu_id)
         if menu is None:
             return None
@@ -50,14 +50,14 @@ class MenuRepository(BaseRepository):
         dishes_count = sum(len(submenu.dishes) for submenu in menu.submenus)
         return {'id': str(menu.id), 'title': menu.title, 'description': menu.description, 'dishes_count': dishes_count, 'submenus_count': submenus_count}
 
-    async def create(self, title: str | None, description: str | None) -> dict:
+    async def create(self, title: str | None, description: str | None) -> dict[str, str]:
         menu = self.model(title=title, description=description)
         self.db.add(menu)
         await self.db.commit()
         await self.db.refresh(menu)
         return {'id': str(menu.id), 'title': menu.title, 'description': menu.description}
 
-    async def update(self, id: UUID, title: str | None, description: str | None) -> dict | None:
+    async def update(self, id: UUID, title: str | None, description: str | None) -> dict[str, str] | None:
         menu = await self.db.get(self.model, id)
         if menu is None:
             return None
@@ -69,7 +69,7 @@ class MenuRepository(BaseRepository):
         menu = await self.db.get(self.model, id)
         return {'id': str(menu.id), 'title': menu.title, 'description': menu.description}
 
-    async def delete(self, id: UUID) -> dict | None:
+    async def delete(self, id: UUID) -> dict[str, str] | None:
         menu = await self.db.get(Menu, id)
         if menu is None:
             return None
@@ -82,7 +82,7 @@ class SubMenuRepository(BaseRepository):
 
     model = Submenu
 
-    async def get_all(self) -> list:
+    async def get_all(self) -> list[dict[str, str]]:
         res = await self.db.execute(select(self.model))
         submenus = res.unique().scalars().all()
         submenus_list = [
@@ -106,7 +106,7 @@ class SubMenuRepository(BaseRepository):
         ]
         return submenus_list
 
-    async def get(self, id: UUID, menu_id: UUID) -> dict | None:
+    async def get(self, id: UUID, menu_id: UUID) -> dict[str, str] | None:
         stmt = select(self.model).where(self.model.id == id, self.model.menu_id == menu_id)
         result = await self.db.execute(stmt)
         submenu = result.scalar()
@@ -115,7 +115,7 @@ class SubMenuRepository(BaseRepository):
         dishes_count = len(submenu.dishes)
         return {'id': str(submenu.id), 'title': submenu.title, 'description': submenu.description, 'dishes_count': dishes_count}
 
-    async def create(self, title: str | None, description: str | None, menu_id: UUID) -> dict:
+    async def create(self, title: str | None, description: str | None, menu_id: UUID) -> dict[str, str]:
         submenu = self.model(title=title, description=description, menu_id=menu_id)
         menu = await self.db.get(Menu, menu_id)
         menu.submenus.append(submenu)
@@ -124,7 +124,7 @@ class SubMenuRepository(BaseRepository):
         await self.db.refresh(submenu)
         return {'id': str(submenu.id), 'title': submenu.title, 'description': submenu.description}
 
-    async def update(self, title: str | None, description: str | None, id: UUID) -> dict | None:
+    async def update(self, title: str | None, description: str | None, id: UUID) -> dict[str, str] | None:
         submenu = await self.db.get(self.model, id)
         if submenu is None:
             return None
@@ -136,7 +136,7 @@ class SubMenuRepository(BaseRepository):
         submenu = await self.db.get(self.model, id)
         return {'id': str(submenu.id), 'title': submenu.title, 'description': submenu.description}
 
-    async def delete(self, id: UUID) -> dict | None:
+    async def delete(self, id: UUID) -> dict[str, str] | None:
         submenu = await self.db.get(self.model, id)
         if submenu is None:
             return None
@@ -149,7 +149,7 @@ class DishRepository(BaseRepository):
 
     model = Dish
 
-    async def get_all(self) -> list:
+    async def get_all(self) -> list[dict[str, str]]:
         res = await self.db.execute(select(self.model))
         dishes = res.unique().scalars().all()
         dishes_list = [
@@ -163,7 +163,7 @@ class DishRepository(BaseRepository):
         ]
         return dishes_list
 
-    async def get(self, dish_id: UUID, submenu_id: UUID) -> dict | None:
+    async def get(self, dish_id: UUID, submenu_id: UUID) -> dict[str, str] | None:
         stmt = select(self.model).where(self.model.id == dish_id, self.model.submenu_id == submenu_id)
         result = await self.db.execute(stmt)
         dish = result.scalar()
@@ -171,7 +171,7 @@ class DishRepository(BaseRepository):
             return None
         return {'id': str(dish.id), 'title': dish.title, 'description': dish.description, 'price': dish.price}
 
-    async def create(self, title: str | None, price: str | None, description: str | None, submenu_id: UUID) -> dict:
+    async def create(self, title: str | None, price: str | None, description: str | None, submenu_id: UUID) -> dict[str, str]:
         dish = self.model(title=title, description=description, price=price, submenu_id=submenu_id)
         submenu = await self.db.get(Submenu, submenu_id)
         submenu.dishes.append(dish)
@@ -180,7 +180,7 @@ class DishRepository(BaseRepository):
         await self.db.refresh(dish)
         return {'id': str(dish.id), 'title': dish.title, 'description': dish.description, 'price': dish.price}
 
-    async def update(self, id: UUID, title: str | None, price: float | None, description: str | None) -> dict | None:
+    async def update(self, id: UUID, title: str | None, price: float | None, description: str | None) -> dict[str, str] | None:
         dish = await self.db.get(self.model, id)
         if dish is None:
             return None
@@ -194,7 +194,7 @@ class DishRepository(BaseRepository):
         dish = await self.db.get(self.model, id)
         return {'id': str(dish.id), 'title': dish.title, 'description': dish.description, 'price': dish.price}
 
-    async def delete(self, id: UUID) -> dict | None:
+    async def delete(self, id: UUID) -> dict[str, str] | None:
         dish = await self.db.get(self.model, id)
         if dish is None:
             return None

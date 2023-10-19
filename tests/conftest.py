@@ -4,11 +4,12 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from httpx import AsyncClient
 from source.db.database import metadata
 
-from config import DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER
+from config import Settings
 from main import app
 from source.db.database import get_db
 
-DATABASE_URL = f'postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+settings = Settings()
+DATABASE_URL = settings.get_db_url
 engine_test = create_async_engine(DATABASE_URL)
 TestingSessionLocal = async_sessionmaker(autocommit=False, autoflush=False, bind=engine_test)
 metadata.bind = engine_test
