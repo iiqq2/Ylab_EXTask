@@ -6,10 +6,10 @@ from uuid import UUID
 from fastapi import status
 from source.api.caches.cache import clear_cache, get_cache_data, create_cache_data
 from source.api.schems.schemas import MenuCreate, SubMenuCreate, DishCreate, DishUpdate
-from source.api.repositories.interfaces import BaseHandler
+from source.api.repositories.interfaces import BaseService
 
 
-class MenuHandler(BaseHandler):
+class MenuService(BaseService):
     
     def __init__(self,db: AsyncSession):
         self.db = db
@@ -52,7 +52,7 @@ class MenuHandler(BaseHandler):
         menu_data = await repository.update(id=menu_id, title=menu_schema.title, description=menu_schema.description)
         return JSONResponse(content=menu_data, status_code=status.HTTP_200_OK)
     
-class SubMenuHandler(BaseHandler):
+class SubMenuService(BaseService):
     
     def __init__(self,db: AsyncSession):
         self.db = db
@@ -97,7 +97,7 @@ class SubMenuHandler(BaseHandler):
         submenu_data = await repository.delete(submenu_id)
         return JSONResponse(content=submenu_data, status_code=status.HTTP_200_OK)
 
-class DishHandler(BaseHandler):
+class DishService(BaseService):
 
     def __init__(self,db: AsyncSession):
         self.db = db

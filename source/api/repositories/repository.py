@@ -2,11 +2,11 @@ from uuid import UUID
 
 from sqlalchemy import select
 
-from source.api.repositories.interfaces import BaseRepository
+from source.api.repositories.interfaces import BaseRepository, BaseService
 from source.db.models import Dish, Menu, Submenu
 
 
-class MenuRepository(BaseRepository):
+class MenuRepository(BaseRepository, BaseService):
 
     model = Menu
 
@@ -78,7 +78,7 @@ class MenuRepository(BaseRepository):
         return {'id': str(menu.id), 'title': menu.title, 'description': menu.description}
 
 
-class SubMenuRepository(BaseRepository):
+class SubMenuRepository(BaseRepository, BaseService):
 
     model = Submenu
 
@@ -145,7 +145,7 @@ class SubMenuRepository(BaseRepository):
         return {'id': str(submenu.id), 'title': submenu.title, 'description': submenu.description}
 
 
-class DishRepository(BaseRepository):
+class DishRepository(BaseRepository, BaseService):
 
     model = Dish
 

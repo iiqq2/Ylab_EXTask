@@ -15,6 +15,9 @@ class BaseRepository(ABC):
     def model(self) -> type[Base]:
         raise NotImplementedError
 
+
+class BaseService(ABC):
+    
     @abstractmethod
     def get_all(self, *args, **kwargs) -> list:
         raise NotImplementedError
@@ -33,27 +36,4 @@ class BaseRepository(ABC):
 
     @abstractmethod
     def create(self, *args, **kwargs) -> dict | None:
-        raise NotImplementedError
-
-
-class BaseHandler(ABC):
-    
-    @abstractmethod
-    def get_all(self, *args, **kwargs) -> dict:
-        raise NotImplementedError
-
-    @abstractmethod
-    def get(self, *args, **kwargs) -> dict:
-        raise NotImplementedError
-
-    @abstractmethod
-    def delete(self, *args, **kwargs) -> dict:
-        raise NotImplementedError
-
-    @abstractmethod
-    def update(self, *args, **kwargs) -> dict:
-        raise NotImplementedError
-
-    @abstractmethod
-    def create(self, *args, **kwargs) -> dict:
         raise NotImplementedError
