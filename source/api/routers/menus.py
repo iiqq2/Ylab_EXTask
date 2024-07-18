@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from source.api.services.service import MenuService
 from source.api.schems.schemas import MenuCreate
+from source.api.services.service import MenuService
 from source.db.database import get_db
 
 router = APIRouter(prefix='/api/v1/menus', tags=['Menus'])
@@ -26,7 +26,7 @@ async def create_menu(menu_schema: MenuCreate, db: AsyncSession = Depends(get_db
 @router.get('/{menu_id}')
 async def get_menu(menu_id: UUID, db: AsyncSession = Depends(get_db)) -> JSONResponse:
     menu = MenuService(db)
-    return await menu.get(menu_id)
+    return await menu.get(menu_id=menu_id)
 
 
 @router.delete('/{menu_id}')

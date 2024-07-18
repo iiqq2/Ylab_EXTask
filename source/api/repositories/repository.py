@@ -42,7 +42,7 @@ class MenuRepository(BaseRepository, BaseService):
         ]
         return menus_list
 
-    async def get(self, menu_id: UUID) -> dict[str, str] | None:
+    async def get(self, menu_id: UUID) -> dict[str, str | int] | None:
         menu = await self.db.get(self.model, menu_id)
         if menu is None:
             return None
@@ -106,7 +106,7 @@ class SubMenuRepository(BaseRepository, BaseService):
         ]
         return submenus_list
 
-    async def get(self, id: UUID, menu_id: UUID) -> dict[str, str] | None:
+    async def get(self, id: UUID, menu_id: UUID) -> dict[str, str | int] | None:
         stmt = select(self.model).where(self.model.id == id, self.model.menu_id == menu_id)
         result = await self.db.execute(stmt)
         submenu = result.scalar()
