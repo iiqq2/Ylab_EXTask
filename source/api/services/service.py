@@ -1,9 +1,11 @@
+import json
 from uuid import UUID
 
 from fastapi import status
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from kafka import producer
 from source.api.caches.cache import clear_cache
 from source.api.caches.decorators import cache_item_response, cache_list_response
 from source.api.factories.factory import RepositoryFactory
@@ -34,6 +36,10 @@ class MenuService(BaseService):
         await clear_cache()
         repository = await RepositoryFactory.create('menu', self.db)
         menu_data = await repository.create(title=menu_schema.title, description=menu_schema.description)
+
+        producer.produce('menu_topic', key=menu_data['id'], value=json.dumps(menu_data).encode('utf-8'))
+        producer.flush()
+
         return JSONResponse(content=menu_data, status_code=status.HTTP_201_CREATED)
 
     async def delete(self, menu_id: UUID) -> JSONResponse:
