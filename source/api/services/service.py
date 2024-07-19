@@ -5,7 +5,7 @@ from fastapi import status
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from kafka import producer
+from config import producer
 from source.api.caches.cache import clear_cache
 from source.api.caches.decorators import cache_item_response, cache_list_response
 from source.api.factories.factory import RepositoryFactory
