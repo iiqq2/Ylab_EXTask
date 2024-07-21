@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from source.api.schems.schemas import MenuCreate
+from source.api.schems.schemas import MenuScheme
 from source.api.services.service import MenuService
 from source.db.database import get_db
 
@@ -18,7 +18,7 @@ async def get_menus(db: AsyncSession = Depends(get_db)) -> JSONResponse:
 
 
 @router.post('/')
-async def create_menu(menu_schema: MenuCreate, db: AsyncSession = Depends(get_db)) -> JSONResponse:
+async def create_menu(menu_schema: MenuScheme, db: AsyncSession = Depends(get_db)) -> JSONResponse:
     menu = MenuService(db)
     return await menu.create(menu_schema)
 
@@ -36,6 +36,6 @@ async def delete_menu(menu_id: UUID, db: AsyncSession = Depends(get_db)) -> JSON
 
 
 @router.patch('/{menu_id}')
-async def update_menu(menu_id: UUID, menu_schema: MenuCreate, db: AsyncSession = Depends(get_db)) -> JSONResponse:
+async def update_menu(menu_id: UUID, menu_schema: MenuScheme, db: AsyncSession = Depends(get_db)) -> JSONResponse:
     menu = MenuService(db)
     return await menu.update(menu_id=menu_id, menu_schema=menu_schema)

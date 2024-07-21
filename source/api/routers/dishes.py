@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from source.api.schems.schemas import DishScheme
 from source.api.services.service import DishService
-from source.api.schems.schemas import DishCreate
 from source.db.database import get_db
 
 router = APIRouter(prefix='/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes', tags=['Dishes'])
@@ -24,13 +24,13 @@ async def get_dish(dish_id: UUID, submenu_id: UUID, db: AsyncSession = Depends(g
 
 
 @router.post('/')
-async def create_dish(dish_schema: DishCreate, submenu_id: UUID, db: AsyncSession = Depends(get_db)) -> JSONResponse:
+async def create_dish(dish_schema: DishScheme, submenu_id: UUID, db: AsyncSession = Depends(get_db)) -> JSONResponse:
     dish = DishService(db)
     return await dish.create(dish_schema=dish_schema, submenu_id=submenu_id)
 
 
 @router.patch('/{dish_id}')
-async def update_dish(dish_id: UUID, dish_schema: DishCreate, db: AsyncSession = Depends(get_db)) -> JSONResponse:
+async def update_dish(dish_id: UUID, dish_schema: DishScheme, db: AsyncSession = Depends(get_db)) -> JSONResponse:
     dish = DishService(db)
     return await dish.update(dish_schema=dish_schema, dish_id=dish_id)
 

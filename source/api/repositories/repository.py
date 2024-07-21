@@ -1,3 +1,4 @@
+from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy import select
@@ -157,7 +158,7 @@ class DishRepository(BaseRepository):
                 'id': str(dish.id),
                 'title': dish.title,
                 'description': dish.description,
-                'price': dish.price
+                'price': str(dish.price)
             }
             for dish in dishes
         ]
@@ -169,18 +170,18 @@ class DishRepository(BaseRepository):
         dish = result.scalar()
         if dish is None:
             return None
-        return {'id': str(dish.id), 'title': dish.title, 'description': dish.description, 'price': dish.price}
+        return {'id': str(dish.id), 'title': dish.title, 'description': dish.description, 'price': str(dish.price)}
 
-    async def create(self, title: str | None, price: str | None, description: str | None, submenu_id: UUID) -> dict[str, str]:
+    async def create(self, title: str | None, price: Decimal | None, description: str | None, submenu_id: UUID) -> dict[str, str]:
         dish = self.model(title=title, description=description, price=price, submenu_id=submenu_id)
         submenu = await self.db.get(Submenu, submenu_id)
         submenu.dishes.append(dish)
         self.db.add(dish)
         await self.db.commit()
         await self.db.refresh(dish)
-        return {'id': str(dish.id), 'title': dish.title, 'description': dish.description, 'price': dish.price}
+        return {'id': str(dish.id), 'title': dish.title, 'description': dish.description, 'price': str(dish.price)}
 
-    async def update(self, id: UUID, title: str | None, price: float | None, description: str | None) -> dict[str, str] | None:
+    async def update(self, id: UUID, title: str | None, price: Decimal | None, description: str | None) -> dict[str, str] | None:
         dish = await self.db.get(self.model, id)
         if dish is None:
             return None
@@ -192,7 +193,7 @@ class DishRepository(BaseRepository):
             dish.price = price
         await self.db.commit()
         dish = await self.db.get(self.model, id)
-        return {'id': str(dish.id), 'title': dish.title, 'description': dish.description, 'price': dish.price}
+        return {'id': str(dish.id), 'title': dish.title, 'description': dish.description, 'price': str(dish.price)}
 
     async def delete(self, id: UUID) -> dict[str, str] | None:
         dish = await self.db.get(self.model, id)
@@ -200,4 +201,4 @@ class DishRepository(BaseRepository):
             return None
         await self.db.delete(dish)
         await self.db.commit()
-        return {'id': str(dish.id), 'title': dish.title, 'description': dish.description, 'price': dish.price}
+        return {'id': str(dish.id), 'title': dish.title, 'description': dish.description, 'price': str(dish.price)}

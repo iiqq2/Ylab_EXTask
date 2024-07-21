@@ -10,7 +10,7 @@ from source.api.caches.cache import clear_cache
 from source.api.caches.decorators import cache_item_response, cache_list_response
 from source.api.factories.factory import RepositoryFactory
 from source.api.repositories.interfaces import BaseService
-from source.api.schems.schemas import DishCreate, DishUpdate, MenuCreate, SubMenuCreate
+from source.api.schems.schemas import DishScheme, MenuScheme, SubmenuScheme
 
 
 class MenuService(BaseService):
@@ -32,7 +32,7 @@ class MenuService(BaseService):
             return JSONResponse(content=menu, status_code=status.HTTP_200_OK)
         return JSONResponse(content={'detail': 'menu not found'}, status_code=status.HTTP_404_NOT_FOUND)
 
-    async def create(self, menu_schema: MenuCreate) -> JSONResponse:
+    async def create(self, menu_schema: MenuScheme) -> JSONResponse:
         await clear_cache()
         repository = await RepositoryFactory.create('menu', self.db)
         menu_data = await repository.create(title=menu_schema.title, description=menu_schema.description)
@@ -41,7 +41,7 @@ class MenuService(BaseService):
 
         return JSONResponse(content=menu_data, status_code=status.HTTP_201_CREATED)
 
-    async def update(self, menu_id: UUID, menu_schema: MenuCreate) -> JSONResponse:
+    async def update(self, menu_id: UUID, menu_schema: MenuScheme) -> JSONResponse:
         await clear_cache()
         repository = await RepositoryFactory.create('menu', self.db)
         menu_data = await repository.update(id=menu_id, title=menu_schema.title, description=menu_schema.description)
@@ -79,7 +79,7 @@ class SubMenuService(BaseService):
             return JSONResponse(content=submenu, status_code=status.HTTP_200_OK)
         return JSONResponse(content={'detail': 'submenu not found'}, status_code=status.HTTP_404_NOT_FOUND)
 
-    async def create(self, menu_id: UUID, submenu_schema: SubMenuCreate) -> JSONResponse:
+    async def create(self, menu_id: UUID, submenu_schema: SubmenuScheme) -> JSONResponse:
         await clear_cache()
         repository = await RepositoryFactory.create('submenu', self.db)
         submenu_data = await repository.create(menu_id=menu_id, title=submenu_schema.title,
@@ -89,7 +89,7 @@ class SubMenuService(BaseService):
 
         return JSONResponse(content=submenu_data, status_code=status.HTTP_201_CREATED)
 
-    async def update(self, submenu_id: UUID, submenu_schema: SubMenuCreate) -> JSONResponse:
+    async def update(self, submenu_id: UUID, submenu_schema: SubmenuScheme) -> JSONResponse:
         await clear_cache()
         repository = await RepositoryFactory.create('submenu', self.db)
         submenu_data = await repository.update(id=submenu_id, title=submenu_schema.title,
@@ -128,7 +128,7 @@ class DishService(BaseService):
             return JSONResponse(content=dish, status_code=status.HTTP_200_OK)
         return JSONResponse(content={'detail': 'dish not found'}, status_code=status.HTTP_404_NOT_FOUND)
 
-    async def create(self, dish_schema: DishCreate, submenu_id: UUID) -> JSONResponse:
+    async def create(self, dish_schema: DishScheme, submenu_id: UUID) -> JSONResponse:
         await clear_cache()
         repository = await RepositoryFactory.create('dish', self.db)
         dish_data = await repository.create(submenu_id=submenu_id, title=dish_schema.title,
@@ -138,7 +138,7 @@ class DishService(BaseService):
 
         return JSONResponse(content=dish_data, status_code=status.HTTP_201_CREATED)
 
-    async def update(self, dish_id: UUID, dish_schema: DishUpdate) -> JSONResponse:
+    async def update(self, dish_id: UUID, dish_schema: DishScheme) -> JSONResponse:
         await clear_cache()
         repository = await RepositoryFactory.create('dish', self.db)
         dish_data = await repository.update(title=dish_schema.title, price=dish_schema.price,

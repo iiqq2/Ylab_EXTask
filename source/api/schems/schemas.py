@@ -1,23 +1,19 @@
+from decimal import Decimal
+
 from pydantic import BaseModel
 
 
-class MenuCreate(BaseModel):
+class MenuScheme(BaseModel):
     title: str
     description: str
 
 
-class SubMenuCreate(BaseModel):
+class SubmenuScheme(BaseModel):
     title: str
     description: str
 
 
-class DishCreate(BaseModel):
+class DishScheme(BaseModel):
     title: str
     description: str
-    price: str
-
-
-class DishUpdate(BaseModel):
-    title: str
-    description: str
-    price: float
+    price: Decimal
