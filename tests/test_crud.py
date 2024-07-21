@@ -1,5 +1,6 @@
-from httpx import AsyncClient
 import pytest
+from httpx import AsyncClient
+
 
 @pytest.mark.asyncio
 async def test_get_all_menus_is_empty(ac: AsyncClient):
@@ -7,6 +8,7 @@ async def test_get_all_menus_is_empty(ac: AsyncClient):
     assert res.status_code == 200
     print(res.json())
     assert res.json() == []
+
 
 @pytest.mark.asyncio
 async def test_create_menu(ac: AsyncClient):
@@ -17,6 +19,7 @@ async def test_create_menu(ac: AsyncClient):
     resa = await ac.get('/api/v1/menus/')
     assert len(resa.json()) == 1
 
+
 @pytest.mark.asyncio
 async def test_update_menu(ac: AsyncClient):
     global menu_id
@@ -26,6 +29,7 @@ async def test_update_menu(ac: AsyncClient):
     assert res.json()['title'] == 'My menu 2'
     assert res.json()['description'] == 'My menu description 2'
 
+
 @pytest.mark.asyncio
 async def test_get_all_submenus_is_emplty(ac: AsyncClient):
     global menu_id
@@ -33,16 +37,18 @@ async def test_get_all_submenus_is_emplty(ac: AsyncClient):
     assert res.status_code == 200
     assert res.json() == []
 
+
 @pytest.mark.asyncio
 async def test_create_submenu(ac: AsyncClient):
     global menu_id
     global submenu_id
     res = await ac.post(f'/api/v1/menus/{menu_id}/submenus/',
-                      json={'title': 'My submenu 1', 'description': 'My submenu description 1'})
+                        json={'title': 'My submenu 1', 'description': 'My submenu description 1'})
     assert res.status_code == 201
     submenu_id = res.json()['id']
     res = await ac.get(f'/api/v1/menus/{menu_id}/submenus/')
     assert len(res.json()) == 1
+
 
 @pytest.mark.asyncio
 async def test_update_submenu(ac: AsyncClient):
@@ -54,6 +60,7 @@ async def test_update_submenu(ac: AsyncClient):
     assert res.json()['title'] == 'My submenu 2'
     assert res.json()['description'] == 'My submenu description 2'
 
+
 @pytest.mark.asyncio
 async def test_get_all_dishes_is_empty(ac: AsyncClient):
     global menu_id
@@ -62,17 +69,19 @@ async def test_get_all_dishes_is_empty(ac: AsyncClient):
     assert res.status_code == 200
     assert res.json() == []
 
+
 @pytest.mark.asyncio
 async def test_create_dish(ac: AsyncClient):
     global menu_id
     global submenu_id
     global dish_id
     res = await ac.post(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/',
-                      json={'title': 'My dish 1', 'description': 'My dish description 1', 'price': '12.50'})
+                        json={'title': 'My dish 1', 'description': 'My dish description 1', 'price': 12.50})
     assert res.status_code == 201
     dish_id = res.json()['id']
     res = await ac.get(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/')
     assert len(res.json()) == 1
+
 
 @pytest.mark.asyncio
 async def test_update_dish(ac: AsyncClient):
@@ -80,12 +89,13 @@ async def test_update_dish(ac: AsyncClient):
     global submenu_id
     global dish_id
     res = await ac.patch(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}', json={
-                       'title': 'My updated dish 1', 'description': 'My updated dish description 1', 'price': '14.5'})
+        'title': 'My updated dish 1', 'description': 'My updated dish description 1', 'price': 14.5})
     assert res.status_code == 200
     res = await ac.get(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}')
     assert res.json()['title'] == 'My updated dish 1'
     assert res.json()['description'] == 'My updated dish description 1'
     assert res.json()['price'] == '14.5'
+
 
 @pytest.mark.asyncio
 async def test_delete_dish(ac: AsyncClient):
@@ -97,6 +107,7 @@ async def test_delete_dish(ac: AsyncClient):
     res = await ac.get('/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/')
     assert res.json() == []
 
+
 @pytest.mark.asyncio
 async def test_delete_submenu(ac: AsyncClient):
     global menu_id
@@ -105,6 +116,7 @@ async def test_delete_submenu(ac: AsyncClient):
     assert response.status_code == 200
     res = await ac.get('/api/v1/menus/{menu_id}/submenus/')
     assert res.json() == []
+
 
 @pytest.mark.asyncio
 async def test_delete_menu(ac: AsyncClient):
