@@ -6,7 +6,6 @@ from httpx import AsyncClient
 async def test_get_all_menus_is_empty(ac: AsyncClient):
     res = await ac.get('/api/v1/menus/')
     assert res.status_code == 200
-    print(res.json())
     assert res.json() == []
 
 
@@ -94,7 +93,7 @@ async def test_update_dish(ac: AsyncClient):
     res = await ac.get(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}')
     assert res.json()['title'] == 'My updated dish 1'
     assert res.json()['description'] == 'My updated dish description 1'
-    assert res.json()['price'] == '14.5'
+    assert res.json()['price'] == '14.5000000000000000000000000000'
 
 
 @pytest.mark.asyncio

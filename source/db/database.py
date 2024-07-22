@@ -1,6 +1,5 @@
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
-from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from config import Settings
@@ -10,9 +9,6 @@ DATABASE_URL = s.get_db_url
 
 engine = create_async_engine(DATABASE_URL)
 session = async_sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-
-metadata = MetaData()
 
 
 async def get_db() -> AsyncGenerator:

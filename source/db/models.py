@@ -15,7 +15,7 @@ class Dish(Base):
 
     id: Mapped[int] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title: Mapped[str] = mapped_column(String, nullable=False)
-    price: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
+    price: Mapped[Decimal] = mapped_column(Numeric(30, 28), nullable=False)
     description: Mapped[str]
     submenu_id: Mapped[int] = mapped_column(UUID(as_uuid=True), ForeignKey('submenus.id'), nullable=False)
     submenu: Mapped['Submenu'] = relationship('Submenu', back_populates='dishes', single_parent=True, lazy='joined')

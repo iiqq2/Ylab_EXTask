@@ -1,15 +1,15 @@
 """initial migrations
 
-Revision ID: 80b19f0a9687
+Revision ID: 5d37fcdc4e8f
 Revises:
-Create Date: 2024-07-21 17:26:55.412356
+Create Date: 2024-07-23 02:17:16.022865
 
 """
 import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = '80b19f0a9687'
+revision = '5d37fcdc4e8f'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -34,7 +34,7 @@ def upgrade() -> None:
     op.create_table('dishes',
                     sa.Column('id', sa.UUID(), nullable=False),
                     sa.Column('title', sa.String(), nullable=False),
-                    sa.Column('price', sa.Numeric(), nullable=False),
+                    sa.Column('price', sa.Numeric(precision=30, scale=28), nullable=False),
                     sa.Column('description', sa.String(), nullable=False),
                     sa.Column('submenu_id', sa.UUID(), nullable=False),
                     sa.ForeignKeyConstraint(['submenu_id'], ['submenus.id'], ),
