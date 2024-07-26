@@ -1047,6 +1047,39 @@ pymysql = ["pymysql"]
 sqlcipher = ["sqlcipher3-binary"]
 
 [[package]]
+name = "sqlalchemy-easy-profile"
+version = "1.3.0"
+description = "An easy profiler for SQLAlchemy queries"
+optional = false
+python-versions = "*"
+files = [
+    {file = "sqlalchemy-easy-profile-1.3.0.tar.gz", hash = "sha256:674148c68508d055bdb384e71cf2667638a879f0774dd2f9e79a919e1fe7f209"},
+    {file = "sqlalchemy_easy_profile-1.3.0-py3-none-any.whl", hash = "sha256:5819cef60e0fbdcbeeb3fd932f1522ccd2a3303eaa64c4ec27cf00b17d3097ba"},
+]
+
+[package.dependencies]
+sqlalchemy = "<2.1"
+sqlparse = ">=0.3.0"
+
+[package.extras]
+dev = ["tox"]
+
+[[package]]
+name = "sqlparse"
+version = "0.5.1"
+description = "A non-validating SQL parser."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "sqlparse-0.5.1-py3-none-any.whl", hash = "sha256:773dcbf9a5ab44a090f3441e2180efe2560220203dc2f8c0b0fa141e18b505e4"},
+    {file = "sqlparse-0.5.1.tar.gz", hash = "sha256:bb6b4df465655ef332548e24f08e205afc81b9ab86cb1c45657a7ff173a3a00e"},
+]
+
+[package.extras]
+dev = ["build", "hatch"]
+doc = ["sphinx"]
+
+[[package]]
 name = "starlette"
 version = "0.27.0"
 description = "The little ASGI library that shines."
@@ -1334,4 +1367,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "43f28b09ff55984486ea78cee6b62b8e008e7caf7c2a3d1b87018515dfd1ef23"
+content-hash = "c69cd87ebe0864ebc46668ea03b6eb9b216a1732121b32ac51505fd925a67e34"
