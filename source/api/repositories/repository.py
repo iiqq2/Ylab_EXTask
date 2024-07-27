@@ -61,6 +61,7 @@ class MenuRepository(BaseRepository):
         async with self.db.begin():
             menu = self.model(title=title, description=description)
             self.db.add(menu)
+            await self.db.flush()
             producer.produce('menu_topic', key=str(menu.id), value=json.dumps(
                 {'id': str(menu.id), 'title': menu.title, 'description': menu.description}).encode('utf-8'))
         await self.db.refresh(menu)
@@ -75,6 +76,7 @@ class MenuRepository(BaseRepository):
                 menu.title = title
             if description is not None:
                 menu.description = description
+            await self.db.flush()
             producer.produce('menu_topic', key=str(menu.id), value=json.dumps(
                 {'id': str(menu.id), 'title': menu.title, 'description': menu.description}).encode('utf-8'))
         await self.db.refresh(menu)
@@ -133,6 +135,7 @@ class SubMenuRepository(BaseRepository):
             menu = await self.db.get(Menu, menu_id)
             menu.submenus.append(submenu)
             self.db.add(submenu)
+            await self.db.flush()
             producer.produce('submenu_topic', key=str(submenu.id), value=json.dumps(
                 {'id': str(submenu.id), 'title': submenu.title, 'description': submenu.description}).encode('utf-8'))
         await self.db.refresh(submenu)
@@ -147,6 +150,7 @@ class SubMenuRepository(BaseRepository):
                 submenu.title = title
             if description is not None:
                 submenu.description = description
+            await self.db.flush()
             producer.produce('submenu_topic', key=str(submenu.id), value=json.dumps(
                 {'id': str(submenu.id), 'title': submenu.title, 'description': submenu.description}).encode('utf-8'))
         await self.db.refresh(submenu)
@@ -194,6 +198,7 @@ class DishRepository(BaseRepository):
             submenu = await self.db.get(Submenu, submenu_id)
             submenu.dishes.append(dish)
             self.db.add(dish)
+            await self.db.flush()
             producer.produce('dish_topic', key=str(dish.id), value=json.dumps(
                 {'id': str(dish.id), 'title': dish.title, 'description': dish.description, 'price': str(dish.price)}).encode('utf-8'))
         await self.db.refresh(dish)
@@ -210,6 +215,7 @@ class DishRepository(BaseRepository):
                 dish.description = description
             if price is not None:
                 dish.price = price
+            await self.db.flush()
             producer.produce('dish_topic', key=str(dish.id), value=json.dumps(
                 {'id': str(dish.id), 'title': dish.title, 'description': dish.description, 'price': str(dish.price)}).encode('utf-8'))
         await self.db.refresh(dish)
