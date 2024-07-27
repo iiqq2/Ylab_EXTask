@@ -1,9 +1,11 @@
+import json
 from decimal import Decimal
 from uuid import UUID
 
 from easy_profile import SessionProfiler
 from sqlalchemy import select
 
+from config import producer
 from source.api.repositories.interfaces import BaseRepository
 from source.db.models import Dish, Menu, Submenu
 
@@ -59,6 +61,8 @@ class MenuRepository(BaseRepository):
         async with self.db.begin():
             menu = self.model(title=title, description=description)
             self.db.add(menu)
+            producer.produce('menu_topic', key=str(menu.id), value=json.dumps(
+                {'id': str(menu.id), 'title': menu.title, 'description': menu.description}).encode('utf-8'))
         await self.db.refresh(menu)
         return {'id': str(menu.id), 'title': menu.title, 'description': menu.description}
 
@@ -71,6 +75,8 @@ class MenuRepository(BaseRepository):
                 menu.title = title
             if description is not None:
                 menu.description = description
+            producer.produce('menu_topic', key=str(menu.id), value=json.dumps(
+                {'id': str(menu.id), 'title': menu.title, 'description': menu.description}).encode('utf-8'))
         await self.db.refresh(menu)
         return {'id': str(menu.id), 'title': menu.title, 'description': menu.description}
 
@@ -80,6 +86,7 @@ class MenuRepository(BaseRepository):
             if menu is None:
                 return None
             await self.db.delete(menu)
+            producer.produce('menu_topic', key=str(id), value=None)
         return {'id': str(menu.id), 'title': menu.title, 'description': menu.description}
 
 
@@ -126,6 +133,8 @@ class SubMenuRepository(BaseRepository):
             menu = await self.db.get(Menu, menu_id)
             menu.submenus.append(submenu)
             self.db.add(submenu)
+            producer.produce('submenu_topic', key=str(submenu.id), value=json.dumps(
+                {'id': str(submenu.id), 'title': submenu.title, 'description': submenu.description}).encode('utf-8'))
         await self.db.refresh(submenu)
         return {'id': str(submenu.id), 'title': submenu.title, 'description': submenu.description}
 
@@ -138,6 +147,8 @@ class SubMenuRepository(BaseRepository):
                 submenu.title = title
             if description is not None:
                 submenu.description = description
+            producer.produce('submenu_topic', key=str(submenu.id), value=json.dumps(
+                {'id': str(submenu.id), 'title': submenu.title, 'description': submenu.description}).encode('utf-8'))
         await self.db.refresh(submenu)
         return {'id': str(submenu.id), 'title': submenu.title, 'description': submenu.description}
 
@@ -147,6 +158,7 @@ class SubMenuRepository(BaseRepository):
             if submenu is None:
                 return None
             await self.db.delete(submenu)
+            producer.produce('submenu_topic', key=str(id), value=None)
         return {'id': str(submenu.id), 'title': submenu.title, 'description': submenu.description}
 
 
@@ -182,6 +194,8 @@ class DishRepository(BaseRepository):
             submenu = await self.db.get(Submenu, submenu_id)
             submenu.dishes.append(dish)
             self.db.add(dish)
+            producer.produce('dish_topic', key=str(dish.id), value=json.dumps(
+                {'id': str(dish.id), 'title': dish.title, 'description': dish.description, 'price': str(dish.price)}).encode('utf-8'))
         await self.db.refresh(dish)
         return {'id': str(dish.id), 'title': dish.title, 'description': dish.description, 'price': str(dish.price)}
 
@@ -196,6 +210,8 @@ class DishRepository(BaseRepository):
                 dish.description = description
             if price is not None:
                 dish.price = price
+            producer.produce('dish_topic', key=str(dish.id), value=json.dumps(
+                {'id': str(dish.id), 'title': dish.title, 'description': dish.description, 'price': str(dish.price)}).encode('utf-8'))
         await self.db.refresh(dish)
         return {'id': str(dish.id), 'title': dish.title, 'description': dish.description, 'price': str(dish.price)}
 
@@ -205,4 +221,5 @@ class DishRepository(BaseRepository):
             if dish is None:
                 return None
             await self.db.delete(dish)
+            producer.produce('dish_topic', key=str(id), value=None)
         return {'id': str(dish.id), 'title': dish.title, 'description': dish.description, 'price': str(dish.price)}
