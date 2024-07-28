@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from config import Settings
 from main import app
+from source.api.caches.cache import redis_client
 from source.db.database import get_db
 from source.db.models import Base
 
@@ -30,6 +31,7 @@ async def prepare_database():
         await conn.run_sync(Base.metadata.create_all)
     yield
     async with engine_test.begin() as conn:
+        await redis_client.flushall()
         await conn.run_sync(Base.metadata.drop_all)
 
 
