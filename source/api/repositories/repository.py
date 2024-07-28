@@ -28,16 +28,14 @@ class MenuRepository(BaseRepository):
                 'submenus': [
                     {
                         'id': str(submenu.id),
-                        'menu_id': str(submenu.menu_id),
                         'title': submenu.title,
                         'description': submenu.description,
                         'dishes': [
                             {
                                 'id': str(dish.id),
-                                'submenu_id': str(dish.submenu_id),
                                 'title': dish.title,
                                 'description': dish.description,
-                                'price': dish.price
+                                'price': str(dish.price)
                             }
                             for dish in submenu.dishes
                         ]
@@ -102,16 +100,14 @@ class SubMenuRepository(BaseRepository):
         submenus_list = [
             {
                 'id': str(submenu.id),
-                'menu_id': str(submenu.menu_id),
                 'title': submenu.title,
                 'description': submenu.description,
                 'dishes': [
                     {
                         'id': str(dish.id),
-                        'submenu_id': str(dish.submenu_id),
                         'title': dish.title,
                         'description': dish.description,
-                        'price': dish.price
+                        'price': str(dish.price)
                     }
                     for dish in submenu.dishes
                 ]
@@ -176,6 +172,7 @@ class DishRepository(BaseRepository):
         dishes_list = [
             {
                 'id': str(dish.id),
+                'submenu_id': str(dish.submenu_id),
                 'title': dish.title,
                 'description': dish.description,
                 'price': str(dish.price)

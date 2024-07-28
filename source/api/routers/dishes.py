@@ -24,18 +24,18 @@ async def get_dish(dish_id: UUID, submenu_id: UUID, db: AsyncSession = Depends(g
 
 
 @router.post('/')
-async def create_dish(dish_schema: DishScheme, submenu_id: UUID, db: AsyncSession = Depends(get_db)) -> JSONResponse:
+async def create_dish(dish_schema: DishScheme, menu_id: UUID, submenu_id: UUID, db: AsyncSession = Depends(get_db)) -> JSONResponse:
     dish = DishService(db)
-    return await dish.create(dish_schema=dish_schema, submenu_id=submenu_id)
+    return await dish.create(dish_schema=dish_schema, menu_id=menu_id, submenu_id=submenu_id)
 
 
 @router.patch('/{dish_id}')
-async def update_dish(dish_id: UUID, dish_schema: DishScheme, db: AsyncSession = Depends(get_db)) -> JSONResponse:
+async def update_dish(menu_id: UUID, submenu_id: UUID, dish_id: UUID, dish_schema: DishScheme, db: AsyncSession = Depends(get_db)) -> JSONResponse:
     dish = DishService(db)
-    return await dish.update(dish_schema=dish_schema, dish_id=dish_id)
+    return await dish.update(dish_schema=dish_schema, menu_id=menu_id, submenu_id=submenu_id, dish_id=dish_id)
 
 
 @router.delete('/{dish_id}')
-async def delete_dish(dish_id: UUID, db: AsyncSession = Depends(get_db)) -> JSONResponse:
+async def delete_dish(menu_id: UUID, submenu_id: UUID, dish_id: UUID, db: AsyncSession = Depends(get_db)) -> JSONResponse:
     dish = DishService(db)
-    return await dish.delete(dish_id)
+    return await dish.delete(menu_id=menu_id, submenu_id=submenu_id, dish_id=dish_id)

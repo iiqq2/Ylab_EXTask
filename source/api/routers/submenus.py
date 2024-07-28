@@ -30,12 +30,12 @@ async def create_submenu(menu_id: UUID, submenu_schema: SubmenuScheme, db: Async
 
 
 @router.patch('/{submenu_id}')
-async def update_submenu(submenu_id: UUID, submenu_schema: SubmenuScheme, db: AsyncSession = Depends(get_db)) -> JSONResponse:
+async def update_submenu(menu_id: UUID, submenu_id: UUID, submenu_schema: SubmenuScheme, db: AsyncSession = Depends(get_db)) -> JSONResponse:
     submenu = SubMenuService(db)
-    return await submenu.update(submenu_id=submenu_id, submenu_schema=submenu_schema)
+    return await submenu.update(menu_id=menu_id, submenu_id=submenu_id, submenu_schema=submenu_schema)
 
 
 @router.delete('/{submenu_id}')
-async def delete_submenu(submenu_id: UUID, db: AsyncSession = Depends(get_db)) -> JSONResponse:
+async def delete_submenu(menu_id: UUID, submenu_id: UUID, db: AsyncSession = Depends(get_db)) -> JSONResponse:
     submenu = SubMenuService(db)
-    return await submenu.delete(submenu_id)
+    return await submenu.delete(menu_id=menu_id, submenu_id=submenu_id)
