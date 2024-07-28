@@ -28,6 +28,7 @@ app.dependency_overrides[get_db] = override_get_db
 @pytest.fixture(autouse=True, scope='session')
 async def prepare_database():
     async with engine_test.begin() as conn:
+        await redis_client.flushall()
         await conn.run_sync(Base.metadata.create_all)
     yield
     async with engine_test.begin() as conn:
