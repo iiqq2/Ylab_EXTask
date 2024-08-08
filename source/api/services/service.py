@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from source.api.caches.cache import clear_cache
-from source.api.caches.decorators import cache_item_response, cache_list_response
+from source.api.caches.decorators import cache_item_response
 from source.api.factories.factory import RepositoryFactory
 from source.api.repositories.interfaces import BaseService
 from source.api.schems.schemas import DishScheme, MenuScheme, SubmenuScheme
@@ -16,10 +16,10 @@ class MenuService(BaseService):
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    @cache_list_response(cache_key='get_menus')
-    async def get_all(self) -> JSONResponse:
+    # @cache_list_response(cache_key='get_menus')
+    async def get_all(self, skip: int, limit: int) -> JSONResponse:
         repository = await RepositoryFactory.create('menu', self.db)
-        menus_list = await repository.get_all()
+        menus_list = await repository.get_all(skip=skip, limit=limit)
         return JSONResponse(content=menus_list, status_code=status.HTTP_200_OK)
 
     @cache_item_response(cache_key_prefix='menu')
@@ -57,7 +57,7 @@ class SubMenuService(BaseService):
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    @cache_list_response(cache_key='get_submenus')
+    # @cache_list_response(cache_key='get_submenus')
     async def get_all(self) -> JSONResponse:
         repository = await RepositoryFactory.create('submenu', self.db)
         submenus_list = await repository.get_all()
@@ -100,7 +100,7 @@ class DishService(BaseService):
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    @cache_list_response(cache_key='get_dishes')
+    # @cache_list_response(cache_key='get_dishes')
     async def get_all(self) -> JSONResponse:
         repository = await RepositoryFactory.create('dish', self.db)
         dishes_list = await repository.get_all()

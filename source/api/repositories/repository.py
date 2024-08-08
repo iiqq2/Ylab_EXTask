@@ -16,9 +16,9 @@ class MenuRepository(BaseRepository):
 
     model = Menu
 
-    async def get_all(self) -> list[dict[str, str]]:
+    async def get_all(self, skip: int, limit: int) -> list[dict[str, str]]:
 
-        res = await self.db.execute(select(self.model))
+        res = await self.db.execute(select(self.model).order_by(self.model.id).offset(skip).limit(limit))
         menus = res.unique().scalars()
         menus_list = [
             {
@@ -94,8 +94,8 @@ class SubMenuRepository(BaseRepository):
 
     model = Submenu
 
-    async def get_all(self) -> list[dict[str, str]]:
-        res = await self.db.execute(select(self.model))
+    async def get_all(self, skip: int, limit: int) -> list[dict[str, str]]:
+        res = await self.db.execute(select(self.model).order_by(self.model.id).offset(skip).limit(limit))
         submenus = res.unique().scalars().all()
         submenus_list = [
             {
@@ -128,8 +128,6 @@ class SubMenuRepository(BaseRepository):
     async def create(self, title: str | None, description: str | None, menu_id: UUID) -> dict[str, str]:
         async with self.db.begin():
             submenu = self.model(title=title, description=description, menu_id=menu_id)
-            menu = await self.db.get(Menu, menu_id)
-            menu.submenus.append(submenu)
             self.db.add(submenu)
             await self.db.flush()
             producer.produce('submenu_topic', key=str(submenu.id), value=json.dumps(
@@ -166,8 +164,8 @@ class DishRepository(BaseRepository):
 
     model = Dish
 
-    async def get_all(self) -> list[dict[str, str]]:
-        res = await self.db.execute(select(self.model))
+    async def get_all(self, skip: int, limit: int) -> list[dict[str, str]]:
+        res = await self.db.execute(select(self.model).order_by(self.model.id).offset(skip).limit(limit))
         dishes = res.unique().scalars().all()
         dishes_list = [
             {
@@ -192,8 +190,6 @@ class DishRepository(BaseRepository):
     async def create(self, title: str | None, price: Decimal | None, description: str | None, submenu_id: UUID) -> dict[str, str]:
         async with self.db.begin():
             dish = self.model(title=title, description=description, price=price, submenu_id=submenu_id)
-            submenu = await self.db.get(Submenu, submenu_id)
-            submenu.dishes.append(dish)
             self.db.add(dish)
             await self.db.flush()
             producer.produce('dish_topic', key=str(dish.id), value=json.dumps(
