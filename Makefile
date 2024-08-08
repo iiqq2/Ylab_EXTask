@@ -3,6 +3,8 @@ ENV = --env-file .env
 APP_FILE = docker_compose/app.yaml
 DB_FILE = docker_compose/db.yaml
 REDIS_FILE = docker_compose/redis.yaml
+ZOOKEEPER_FILE = docker_compose/zookeeper.yaml
+KAFKA_FILE = docker_compose/kafka.yaml
 PROJECT_NAME = ylab
 
 .PHONY: app
@@ -41,17 +43,27 @@ redis-logs:
 redis-down:
 	${DC} -p ${PROJECT_NAME} -f ${REDIS_FILE} ${ENV} down
 
-.PHONY: migrate
-migrate:
-	${DC} -p ${PROJECT_NAME} -f ${APP_FILE} ${ENV} exec app sh -c "alembic upgrade head"
+.PHONY: zookeeper
+zookeeper:
+	${DC} -p ${PROJECT_NAME} -f ${ZOOKEEPER_FILE} ${ENV} up -d
 
-.PHONY: gunicorn
-gunicorn:
-	${DC} -p ${PROJECT_NAME} -f ${APP_FILE} ${ENV} exec app sh -c "gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000"
+.PHONY: zookeeper-logs
+zookeeper-logs:
+	${DC} -p ${PROJECT_NAME} -f ${ZOOKEEPER_FILE} ${ENV} logs -f
 
-.PHONY: all-up
-all-up: app db redis
+.PHONY: zookeeper-down
+zookeeper-down:
+	${DC} -p ${PROJECT_NAME} -f ${ZOOKEEPER_FILE} ${ENV} down
 
-.PHONY: all-down
-all-down:
-	${DC} -p ${PROJECT_NAME} -f ${APP_FILE} -f ${DB_FILE} -f ${REDIS_FILE} ${ENV} down
+.PHONY: kafka
+kafka:
+	${DC} -p ${PROJECT_NAME} -f ${KAFKA_FILE} ${ENV} up -d
+
+.PHONY: kafka-logs
+kafka-logs:
+	${DC} -p ${PROJECT_NAME} -f ${KAFKA_FILE} ${ENV} logs -f
+
+.PHONY: kafka-down
+kafka-down:
+	${DC} -p ${PROJECT_NAME} -f ${KAFKA_FILE} ${ENV} down
+
