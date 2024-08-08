@@ -58,9 +58,9 @@ class SubMenuService(BaseService):
         self.db = db
 
     # @cache_list_response(cache_key='get_submenus')
-    async def get_all(self) -> JSONResponse:
+    async def get_all(self, skip: int, limit: int) -> JSONResponse:
         repository = await RepositoryFactory.create('submenu', self.db)
-        submenus_list = await repository.get_all()
+        submenus_list = await repository.get_all(skip=skip, limit=limit)
         return JSONResponse(content=submenus_list, status_code=status.HTTP_200_OK)
 
     @cache_item_response(cache_key_prefix='submenu')
@@ -101,9 +101,9 @@ class DishService(BaseService):
         self.db = db
 
     # @cache_list_response(cache_key='get_dishes')
-    async def get_all(self) -> JSONResponse:
+    async def get_all(self, skip: int, limit: int) -> JSONResponse:
         repository = await RepositoryFactory.create('dish', self.db)
-        dishes_list = await repository.get_all()
+        dishes_list = await repository.get_all(skip=skip, limit=limit)
         return JSONResponse(content=dishes_list, status_code=status.HTTP_200_OK)
 
     @cache_item_response(cache_key_prefix='dish')

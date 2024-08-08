@@ -11,10 +11,10 @@ from source.db.database import get_db
 router = APIRouter(prefix='/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes', tags=['Dishes'])
 
 
-@router.get('/')
-async def get_all_dishes(db: AsyncSession = Depends(get_db)) -> JSONResponse:
+@router.get('/{skip}/{limit}')
+async def get_all_dishes(skip: int, limit: int, db: AsyncSession = Depends(get_db)) -> JSONResponse:
     dishes = DishService(db)
-    return await dishes.get_all()
+    return await dishes.get_all(skip=skip, limit=limit)
 
 
 @router.get('/{dish_id}')
