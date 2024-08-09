@@ -4,7 +4,7 @@ from httpx import AsyncClient
 
 @pytest.mark.asyncio
 async def test_get_all_menus_is_empty(ac: AsyncClient):
-    res = await ac.get('/api/v1/menus/')
+    res = await ac.get('/api/v1/menus/list/0/10')
     assert res.status_code == 200
     assert res.json() == []
 
@@ -15,7 +15,7 @@ async def test_create_menu(ac: AsyncClient):
     res = await ac.post('/api/v1/menus/', json={'title': 'My menu 1', 'description': 'My menu description 1'})
     assert res.status_code == 201
     menu_id = res.json()['id']
-    resa = await ac.get('/api/v1/menus/')
+    resa = await ac.get('/api/v1/menus/list/0/10')
     assert len(resa.json()) == 1
 
 
@@ -32,7 +32,7 @@ async def test_update_menu(ac: AsyncClient):
 @pytest.mark.asyncio
 async def test_get_all_submenus_is_emplty(ac: AsyncClient):
     global menu_id
-    res = await ac.get(f'/api/v1/menus/{menu_id}/submenus/')
+    res = await ac.get(f'/api/v1/menus/{menu_id}/submenus/list/0/10')
     assert res.status_code == 200
     assert res.json() == []
 
@@ -64,7 +64,7 @@ async def test_update_submenu(ac: AsyncClient):
 async def test_get_all_dishes_is_empty(ac: AsyncClient):
     global menu_id
     global submenu_id
-    res = await ac.get(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/')
+    res = await ac.get(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/list/0/10')
     assert res.status_code == 200
     assert res.json() == []
 
@@ -78,7 +78,7 @@ async def test_create_dish(ac: AsyncClient):
                         json={'title': 'My dish 1', 'description': 'My dish description 1', 'price': 12.50})
     assert res.status_code == 201
     dish_id = res.json()['id']
-    res = await ac.get(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/')
+    res = await ac.get(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/list/0/10')
     assert len(res.json()) == 1
 
 
@@ -103,7 +103,7 @@ async def test_delete_dish(ac: AsyncClient):
     global dish_id
     response = await ac.delete(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}')
     assert response.status_code == 200
-    res = await ac.get('/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/')
+    res = await ac.get('/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/list/0/10')
     assert res.json() == []
 
 
@@ -113,7 +113,7 @@ async def test_delete_submenu(ac: AsyncClient):
     global submenu_id
     response = await ac.delete(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}')
     assert response.status_code == 200
-    res = await ac.get('/api/v1/menus/{menu_id}/submenus/')
+    res = await ac.get('/api/v1/menus/{menu_id}/submenus/list/0/10')
     assert res.json() == []
 
 
@@ -122,5 +122,5 @@ async def test_delete_menu(ac: AsyncClient):
     global menu_id
     response = await ac.delete(f'/api/v1/menus/{menu_id}')
     assert response.status_code == 200
-    res = await ac.get('/api/v1/menus/')
+    res = await ac.get('/api/v1/menus/list/0/10')
     assert res.json() == []

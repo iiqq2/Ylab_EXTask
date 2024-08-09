@@ -11,7 +11,7 @@ from source.db.database import get_db
 router = APIRouter(prefix='/api/v1/menus', tags=['Menus'])
 
 
-@router.get('/{skip}/{limit}')
+@router.get('/list/{skip}/{limit}')
 async def get_menus(skip: int, limit: int, db: AsyncSession = Depends(get_db)) -> JSONResponse:
     menus_list = MenuService(db)
     return await menus_list.get_all(skip=skip, limit=limit)
