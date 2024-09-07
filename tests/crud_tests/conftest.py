@@ -57,4 +57,5 @@ async def ac():
 async def redis_clients():
     client = redis_client
     yield client
+    await redis_client.flushall()
     await client.aclose()

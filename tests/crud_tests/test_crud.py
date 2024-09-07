@@ -2,6 +2,7 @@ import pytest
 from httpx import AsyncClient
 
 
+@pytest.mark.crud
 @pytest.mark.asyncio
 async def test_get_all_menus_is_empty(ac: AsyncClient):
     res = await ac.get('/api/v1/menus/list/0/10')
@@ -9,6 +10,7 @@ async def test_get_all_menus_is_empty(ac: AsyncClient):
     assert res.json() == []
 
 
+@pytest.mark.crud
 @pytest.mark.asyncio
 async def test_create_menu(ac: AsyncClient):
     global menu_id
@@ -19,6 +21,7 @@ async def test_create_menu(ac: AsyncClient):
     assert len(resa.json()) == 1
 
 
+@pytest.mark.crud
 @pytest.mark.asyncio
 async def test_update_menu(ac: AsyncClient):
     global menu_id
@@ -29,6 +32,7 @@ async def test_update_menu(ac: AsyncClient):
     assert res.json()['description'] == 'My menu description 2'
 
 
+@pytest.mark.crud
 @pytest.mark.asyncio
 async def test_get_all_submenus_is_emplty(ac: AsyncClient):
     global menu_id
@@ -37,6 +41,7 @@ async def test_get_all_submenus_is_emplty(ac: AsyncClient):
     assert res.json() == []
 
 
+@pytest.mark.crud
 @pytest.mark.asyncio
 async def test_create_submenu(ac: AsyncClient):
     global menu_id
@@ -49,6 +54,7 @@ async def test_create_submenu(ac: AsyncClient):
     assert len(res.json()) == 1
 
 
+@pytest.mark.crud
 @pytest.mark.asyncio
 async def test_update_submenu(ac: AsyncClient):
     global menu_id
@@ -60,6 +66,7 @@ async def test_update_submenu(ac: AsyncClient):
     assert res.json()['description'] == 'My submenu description 2'
 
 
+@pytest.mark.crud
 @pytest.mark.asyncio
 async def test_get_all_dishes_is_empty(ac: AsyncClient):
     global menu_id
@@ -69,6 +76,7 @@ async def test_get_all_dishes_is_empty(ac: AsyncClient):
     assert res.json() == []
 
 
+@pytest.mark.crud
 @pytest.mark.asyncio
 async def test_create_dish(ac: AsyncClient):
     global menu_id
@@ -82,6 +90,7 @@ async def test_create_dish(ac: AsyncClient):
     assert len(res.json()) == 1
 
 
+@pytest.mark.crud
 @pytest.mark.asyncio
 async def test_update_dish(ac: AsyncClient):
     global menu_id
@@ -96,6 +105,7 @@ async def test_update_dish(ac: AsyncClient):
     assert res.json()['price'] == '14.5000000000000000000000000000'
 
 
+@pytest.mark.crud
 @pytest.mark.asyncio
 async def test_delete_dish(ac: AsyncClient):
     global menu_id
@@ -107,6 +117,7 @@ async def test_delete_dish(ac: AsyncClient):
     assert res.json() == []
 
 
+@pytest.mark.crud
 @pytest.mark.asyncio
 async def test_delete_submenu(ac: AsyncClient):
     global menu_id
@@ -117,6 +128,7 @@ async def test_delete_submenu(ac: AsyncClient):
     assert res.json() == []
 
 
+@pytest.mark.crud
 @pytest.mark.asyncio
 async def test_delete_menu(ac: AsyncClient):
     global menu_id

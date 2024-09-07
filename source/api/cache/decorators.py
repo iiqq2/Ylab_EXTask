@@ -28,7 +28,7 @@ def cache_item_response(cache_key_prefix: str):
     def decorator(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):
-            cache_key = f'{cache_key_prefix}_{str(kwargs.get('menu_id'))}'
+            cache_key = f'{cache_key_prefix}_{list(kwargs.values())[-1]}'
             cache_data = await get_cache_data(cache_key)
             if cache_data:
                 return JSONResponse(content=json.loads(cache_data), status_code=status.HTTP_200_OK)
