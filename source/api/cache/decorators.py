@@ -4,7 +4,7 @@ from functools import wraps
 from fastapi.responses import JSONResponse
 from starlette import status
 
-from source.api.caches.cache import create_cache_data, get_cache_data
+from source.api.cache.cache import create_cache_data, get_cache_data
 
 
 def cache_list_response(cache_key_prefix: str):

@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from config import Settings
 from main import app
-from source.api.caches.cache import redis_client
+from source.api.cache.cache import redis_client
 from source.db.database import get_db
 from source.db.models import Base
 
@@ -51,3 +51,10 @@ client = TestClient(app)
 async def ac():
     async with AsyncClient(app=app, base_url='http://test') as ac:
         yield ac
+
+
+@pytest.fixture(scope='session')
+async def redis_clients():
+    client = redis_client
+    yield client
+    await client.aclose()

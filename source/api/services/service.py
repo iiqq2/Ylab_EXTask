@@ -4,8 +4,8 @@ from fastapi import status
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from source.api.caches.cache import clear_cache
-from source.api.caches.config import (
+from source.api.cache.cache import clear_cache
+from source.api.cache.config import (
     DISH_ITEM_CACHE_KEY,
     DISH_LIST_CACHE_KEY,
     MENU_ITEM_CACHE_KEY,
@@ -13,7 +13,7 @@ from source.api.caches.config import (
     SUBMENU_ITEM_CACHE_KEY,
     SUBMENU_LIST_CACHE_KEY,
 )
-from source.api.caches.decorators import cache_item_response, cache_list_response
+from source.api.cache.decorators import cache_item_response, cache_list_response
 from source.api.factories.factory import RepositoryFactory
 from source.api.repositories.interfaces import BaseService
 from source.api.schems.schemas import DishScheme, MenuScheme, SubmenuScheme
