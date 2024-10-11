@@ -3,7 +3,7 @@ from decimal import Decimal
 from uuid import UUID
 
 from easy_profile import SessionProfiler
-from sqlalchemy import select
+from sqlalchemy import delete, func, insert, outerjoin, select, update
 
 from config import producer
 from source.api.repositories.interfaces import BaseRepository
@@ -18,9 +18,15 @@ class MenuRepository(BaseRepository):
 
     async def get_all(self, skip: int, limit: int) -> list[dict[str, str]]:
 
-        res = await self.db.execute(select(self.model).order_by(self.model.id).offset(skip).limit(limit))
-        menus = res.unique().scalars()
-        menus_list = [
+        stmt = select(self.model, Submenu, Dish).select_from(
+            outerjoin(self.model, Submenu, self.model.id == Submenu.menu_id)
+            .outerjoin(Dish, Submenu.id == Dish.submenu_id)
+        ).order_by(self.model.id).offset(skip).limit(limit)
+
+        res = await self.db.execute(stmt)
+        menu_rows = res.scalars().unique().all()
+
+        return [
             {
                 'id': str(menu.id),
                 'title': menu.title,
@@ -36,58 +42,65 @@ class MenuRepository(BaseRepository):
                                 'title': dish.title,
                                 'description': dish.description,
                                 'price': str(dish.price)
-                            }
-                            for dish in submenu.dishes
+                            } for dish in submenu.dishes
                         ]
-                    }
-                    for submenu in menu.submenus
+                    } for submenu in menu.submenus
                 ]
-            }
-            for menu in menus
+            } for menu in menu_rows
         ]
-        return menus_list
 
     async def get(self, menu_id: UUID) -> dict[str, str | int] | None:
-        menu = await self.db.get(self.model, menu_id)
-        if menu is None:
-            return None
-        submenus_count = len(menu.submenus)
-        dishes_count = sum(len(submenu.dishes) for submenu in menu.submenus)
-        return {'id': str(menu.id), 'title': menu.title, 'description': menu.description, 'dishes_count': dishes_count, 'submenus_count': submenus_count}
 
-    async def create(self, title: str | None, description: str | None) -> dict[str, str]:
+        stmt = select(self.model, func.count(Submenu.id), func.count(Dish.id)).where(self.model.id == menu_id).select_from(
+            outerjoin(self.model, Submenu, menu_id == Submenu.menu_id)
+            .outerjoin(Dish, Submenu.id == Dish.submenu_id)
+        ).group_by(self.model.id)
+
+        _ = await self.db.execute(stmt)
+        res = _.unique().fetchall()
+
+        if res:
+            menu, submenus_count, dishes_count = res[0]
+            return {
+                'id': str(menu_id),
+                'title': menu.title,
+                'description': menu.description,
+                'submenus_count': submenus_count,
+                'dishes_count': dishes_count
+            }
+
+    async def create(self, title: str, description: str) -> dict[str, str]:
         async with self.db.begin():
-            menu = self.model(title=title, description=description)
-            self.db.add(menu)
-            await self.db.flush()
-            producer.produce('menu_topic', key=str(menu.id), value=json.dumps(
-                {'id': str(menu.id), 'title': menu.title, 'description': menu.description}).encode('utf-8'))
-        await self.db.refresh(menu)
-        return {'id': str(menu.id), 'title': menu.title, 'description': menu.description}
+            stmt = insert(self.model).values(title=title, description=description).returning(self.model.id)
+            res = await self.db.execute(stmt)
+            new_menu_id = str(res.scalar_one())
+            producer.produce('menu_topic', key=new_menu_id, value=json.dumps(
+                {'id': new_menu_id, 'title': title, 'description': description}).encode('utf-8'))
+        return {'id': new_menu_id, 'title': title, 'description': description}
 
     async def update(self, id: UUID, title: str | None, description: str | None) -> dict[str, str] | None:
         async with self.db.begin():
-            menu = await self.db.get(self.model, id)
-            if menu is None:
-                return None
-            if title is not None:
-                menu.title = title
-            if description is not None:
-                menu.description = description
-            await self.db.flush()
-            producer.produce('menu_topic', key=str(menu.id), value=json.dumps(
-                {'id': str(menu.id), 'title': menu.title, 'description': menu.description}).encode('utf-8'))
-        await self.db.refresh(menu)
-        return {'id': str(menu.id), 'title': menu.title, 'description': menu.description}
+            values = {}
+            if title:
+                values['title'] = title
+            if description:
+                values['description'] = description
+            if values:
+                stmt = update(self.model).where(self.model.id == id).values(
+                    **values).returning(self.model.title, self.model.description)
+                res = await self.db.execute(stmt)
+                updated_values = res.fetchone()
+            producer.produce('menu_topic', key=str(id), value=json.dumps(
+                {'id': str(id), 'title': updated_values.title, 'description': updated_values.description}).encode('utf-8'))
+        return {'id': str(id), 'title': updated_values.title, 'description': updated_values.description}
 
     async def delete(self, id: UUID) -> dict[str, str] | None:
         async with self.db.begin():
-            menu = await self.db.get(Menu, id)
-            if menu is None:
-                return None
-            await self.db.delete(menu)
+            stmt = delete(self.model).where(self.model.id == id).returning(self.model.title, self.model.description)
+            res = await self.db.execute(stmt)
+            deleted_values = res.fetchone()
             producer.produce('menu_topic', key=str(id), value=None)
-        return {'id': str(menu.id), 'title': menu.title, 'description': menu.description}
+        return {'id': str(id), 'title': deleted_values.title, 'description': deleted_values.description}
 
 
 class SubMenuRepository(BaseRepository):
