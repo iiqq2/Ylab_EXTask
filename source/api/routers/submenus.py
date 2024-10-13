@@ -18,9 +18,9 @@ async def get_all_submenu(skip: int, limit: int, db: AsyncSession = Depends(get_
 
 
 @router.get('/{submenu_id}')
-async def get_submenu(menu_id: UUID, submenu_id: UUID, db: AsyncSession = Depends(get_db)) -> JSONResponse:
+async def get_submenu(submenu_id: UUID, db: AsyncSession = Depends(get_db)) -> JSONResponse:
     submenu = SubMenuService(db)
-    return await submenu.get(menu_id=menu_id, submenu_id=submenu_id)
+    return await submenu.get(submenu_id=submenu_id)
 
 
 @router.post('/')

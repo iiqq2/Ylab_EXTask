@@ -18,7 +18,7 @@ class Dish(Base):
     price: Mapped[Decimal] = mapped_column(Numeric(30, 28), nullable=False)
     description: Mapped[str]
     submenu_id: Mapped[int] = mapped_column(UUID(as_uuid=True), ForeignKey('submenus.id'), nullable=False)
-    submenu: Mapped['Submenu'] = relationship('Submenu', back_populates='dishes', single_parent=True, lazy='joined')
+    submenu: Mapped['Submenu'] = relationship('Submenu', back_populates='dishes', single_parent=True)
 
 
 class Submenu(Base):
@@ -28,9 +28,9 @@ class Submenu(Base):
     title: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[str]
     menu_id: Mapped[int] = mapped_column(UUID(as_uuid=True), ForeignKey('menus.id'), nullable=False)
-    menu: Mapped['Menu'] = relationship('Menu', back_populates='submenus', lazy='joined', single_parent=True)
+    menu: Mapped['Menu'] = relationship('Menu', back_populates='submenus', single_parent=True)
     dishes: Mapped[list['Dish']] = relationship(
-        'Dish', back_populates='submenu', lazy='joined', cascade='all, delete-orphan')
+        'Dish', back_populates='submenu', cascade='all, delete-orphan')
 
 
 class Menu(Base):
@@ -40,4 +40,4 @@ class Menu(Base):
     title: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[str]
     submenus: Mapped[list['Submenu']] = relationship(
-        'Submenu', back_populates='menu', lazy='joined', cascade='all, delete-orphan')
+        'Submenu', back_populates='menu', cascade='all, delete-orphan')

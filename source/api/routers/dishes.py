@@ -18,9 +18,9 @@ async def get_all_dishes(skip: int, limit: int, db: AsyncSession = Depends(get_d
 
 
 @router.get('/{dish_id}')
-async def get_dish(dish_id: UUID, submenu_id: UUID, db: AsyncSession = Depends(get_db)) -> JSONResponse:
+async def get_dish(dish_id: UUID, db: AsyncSession = Depends(get_db)) -> JSONResponse:
     dish = DishService(db)
-    return await dish.get(dish_id=dish_id, submenu_id=submenu_id)
+    return await dish.get(dish_id=dish_id)
 
 
 @router.post('/')
