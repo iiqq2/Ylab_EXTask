@@ -201,7 +201,7 @@ class DishRepository(BaseRepository):
     async def get(self, dish_id: UUID) -> dict[str, str] | None:
         stmt = select(self.model).where(self.model.id == dish_id)
         res = await self.db.execute(stmt)
-        dish = res.scalar_one_or_none()
+        dish = res.unique().scalar_one_or_none()
         if dish:
             return {'id': str(dish.id), 'title': dish.title, 'description': dish.description, 'price': str(dish.price)}
 

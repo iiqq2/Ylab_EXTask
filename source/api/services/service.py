@@ -24,13 +24,13 @@ class MenuService(BaseService):
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    # @cache_list_response(cache_key_prefix=MENU_LIST_CACHE_KEY)
+    @cache_list_response(cache_key_prefix=MENU_LIST_CACHE_KEY)
     async def get_all(self, skip: int, limit: int) -> JSONResponse:
         repository = await RepositoryFactory.create('menu', self.db)
         menus_list = await repository.get_all(skip=skip, limit=limit)
         return JSONResponse(content=menus_list, status_code=status.HTTP_200_OK)
 
-    # @cache_item_response(cache_key_prefix=MENU_ITEM_CACHE_KEY)
+    @cache_item_response(cache_key_prefix=MENU_ITEM_CACHE_KEY)
     async def get(self, menu_id: UUID) -> JSONResponse:
         repository = await RepositoryFactory.create('menu', self.db)
         menu = await repository.get(menu_id)
@@ -65,13 +65,13 @@ class SubMenuService(BaseService):
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    # @cache_list_response(cache_key_prefix=SUBMENU_LIST_CACHE_KEY)
+    @cache_list_response(cache_key_prefix=SUBMENU_LIST_CACHE_KEY)
     async def get_all(self, skip: int, limit: int) -> JSONResponse:
         repository = await RepositoryFactory.create('submenu', self.db)
         submenus_list = await repository.get_all(skip=skip, limit=limit)
         return JSONResponse(content=submenus_list, status_code=status.HTTP_200_OK)
 
-    # @cache_item_response(cache_key_prefix=SUBMENU_ITEM_CACHE_KEY)
+    @cache_item_response(cache_key_prefix=SUBMENU_ITEM_CACHE_KEY)
     async def get(self, submenu_id: UUID) -> JSONResponse:
         repository = await RepositoryFactory.create('submenu', self.db)
         submenu = await repository.get(id=submenu_id)
@@ -108,13 +108,13 @@ class DishService(BaseService):
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    # @cache_list_response(cache_key_prefix=DISH_LIST_CACHE_KEY)
+    @cache_list_response(cache_key_prefix=DISH_LIST_CACHE_KEY)
     async def get_all(self, skip: int, limit: int) -> JSONResponse:
         repository = await RepositoryFactory.create('dish', self.db)
         dishes_list = await repository.get_all(skip=skip, limit=limit)
         return JSONResponse(content=dishes_list, status_code=status.HTTP_200_OK)
 
-    # @cache_item_response(cache_key_prefix=DISH_ITEM_CACHE_KEY)
+    @cache_item_response(cache_key_prefix=DISH_ITEM_CACHE_KEY)
     async def get(self, dish_id: UUID) -> JSONResponse:
         repository = await RepositoryFactory.create('dish', self.db)
         dish = await repository.get(dish_id=dish_id)
