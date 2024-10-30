@@ -3,10 +3,15 @@ from decimal import Decimal
 from uuid import UUID
 
 from easy_profile import SessionProfiler
-from sqlalchemy import delete, func, insert, outerjoin, select, update
+from sqlalchemy import delete, func, insert, outerjoin, select, text, update
 
 from config import producer
 from source.api.repositories.interfaces import BaseRepository
+from source.api.repositories.utils import (
+    add_dish_if_unique,
+    get_or_create_menu,
+    get_or_create_submenu,
+)
 from source.db.models import Dish, Menu, Submenu
 
 profiler = SessionProfiler()
@@ -17,37 +22,37 @@ class MenuRepository(BaseRepository):
     model = Menu
 
     async def get_all(self, skip: int, limit: int) -> list[dict[str, str]]:
+        res_menu = []
+        menu_map = {}
 
-        stmt = select(self.model, Submenu, Dish).select_from(
-            outerjoin(self.model, Submenu, self.model.id == Submenu.menu_id)
-            .outerjoin(Dish, Submenu.id == Dish.submenu_id)
-        ).order_by(self.model.id).offset(skip).limit(limit)
+        res = await self.db.execute(text('''SELECT
+                limited_menus.id AS menu_id,
+                limited_menus.title AS menu_title,
+                limited_menus.description AS menu_description,
+                submenus.id AS submenu_id,
+                submenus.title AS submenu_title,
+                submenus.description AS submenu_description,
+                submenus.menu_id AS submenu_menu_id,
+                dishes.id AS dish_id,
+                dishes.title AS dish_title,
+                dishes.price AS dish_price,
+                dishes.description AS dish_description,
+                dishes.submenu_id AS dish_submenu_id
+            FROM (SELECT * FROM menus ORDER BY id LIMIT :limit OFFSET :skip) AS limited_menus
+            LEFT JOIN submenus ON limited_menus.id = submenus.menu_id
+            LEFT JOIN dishes ON submenus.id = dishes.submenu_id
+            ORDER BY limited_menus.id;
+            '''), {'limit': limit, 'skip': skip})
 
-        res = await self.db.execute(stmt)
-        menu_rows = res.scalars().unique().all()
+        rows = res.mappings().fetchall()
+        for row in rows:
+            menu = get_or_create_menu(row, menu_map, res_menu)
+            submenu = get_or_create_submenu(row, menu)
 
-        return [
-            {
-                'id': str(menu.id),
-                'title': menu.title,
-                'description': menu.description,
-                'submenus': [
-                    {
-                        'id': str(submenu.id),
-                        'title': submenu.title,
-                        'description': submenu.description,
-                        'dishes': [
-                            {
-                                'id': str(dish.id),
-                                'title': dish.title,
-                                'description': dish.description,
-                                'price': str(dish.price)
-                            } for dish in submenu.dishes
-                        ]
-                    } for submenu in menu.submenus
-                ]
-            } for menu in menu_rows
-        ]
+            if submenu:
+                add_dish_if_unique(row, submenu)
+
+        return res_menu
 
     async def get(self, menu_id: UUID) -> dict[str, str | int] | None:
 
@@ -202,6 +207,7 @@ class DishRepository(BaseRepository):
         stmt = select(self.model).where(self.model.id == dish_id)
         res = await self.db.execute(stmt)
         dish = res.unique().scalar_one_or_none()
+        print(dish)
         if dish:
             return {'id': str(dish.id), 'title': dish.title, 'description': dish.description, 'price': str(dish.price)}
 
