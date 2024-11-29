@@ -22,56 +22,74 @@ class MenuRepository(BaseRepository):
     model = Menu
 
     async def get_all(self, skip: int, limit: int) -> list[dict[str, str]]:
-        res_menu = []
-        menu_map = {}
 
-        res = await self.db.execute(text('''SELECT
-                limited_menus.id AS menu_id,
-                limited_menus.title AS menu_title,
-                limited_menus.description AS menu_description,
-                submenus.id AS submenu_id,
-                submenus.title AS submenu_title,
-                submenus.description AS submenu_description,
-                submenus.menu_id AS submenu_menu_id,
-                dishes.id AS dish_id,
-                dishes.title AS dish_title,
-                dishes.price AS dish_price,
-                dishes.description AS dish_description,
-                dishes.submenu_id AS dish_submenu_id
-            FROM (SELECT * FROM menus ORDER BY id LIMIT :limit OFFSET :skip) AS limited_menus
-            LEFT JOIN submenus ON limited_menus.id = submenus.menu_id
-            LEFT JOIN dishes ON submenus.id = dishes.submenu_id
-            ORDER BY limited_menus.id;
+        res = await self.db.execute(text('''
+            SELECT
+                cast(menus.id as text) AS menu_id,
+                menus.title AS menu_title,
+                menus.description AS menu_description,
+                COALESCE(
+                    JSON_AGG(
+                        JSON_BUILD_OBJECT(
+                            'submenu_id', cast(submenus.id as text),
+                            'submenu_title', submenus.title,
+                            'dishes', COALESCE(submenus_dishes.dishes, '[]'::json)
+                        )
+                    ) FILTER (WHERE submenus.id IS NOT NULL),
+                    '[]'::json
+                ) AS submenus
+            FROM menus
+            LEFT JOIN submenus ON menus.id = submenus.menu_id
+            LEFT JOIN (
+                SELECT
+                    dishes.submenu_id,
+                    JSON_AGG(
+                        JSON_BUILD_OBJECT(
+                            'dish_id', cast(dishes.id as text),
+                            'dish_title', dishes.title,
+                            'dish_price', dishes.price
+                        )
+                    ) AS dishes
+                FROM dishes
+                GROUP BY dishes.submenu_id
+            ) AS submenus_dishes ON submenus.id = submenus_dishes.submenu_id
+            GROUP BY menus.id
+            ORDER BY menus.id
+            LIMIT :limit
+            OFFSET :skip;
             '''), {'limit': limit, 'skip': skip})
 
-        rows = res.mappings().fetchall()
-        for row in rows:
-            menu = get_or_create_menu(row, menu_map, res_menu)
-            submenu = get_or_create_submenu(row, menu)
-
-            if submenu:
-                add_dish_if_unique(row, submenu)
-
-        return res_menu
+        rows = res.mappings().all()
+        return [
+            {
+                'id': row.menu_id,
+                'title': row.menu_title,
+                'description': row.menu_description,
+                'submenus': row.submenus
+            }
+            for row in rows
+        ]
 
     async def get(self, menu_id: UUID) -> dict[str, str | int] | None:
 
-        stmt = select(self.model, func.count(Submenu.id), func.count(Dish.id)).where(self.model.id == menu_id).select_from(
-            outerjoin(self.model, Submenu, menu_id == Submenu.menu_id)
-            .outerjoin(Dish, Submenu.id == Dish.submenu_id)
-        ).group_by(self.model.id)
+        res = await self.db.execute(text(
+            '''
+            select menus.id, menus.description, menus.title, count(distinct submenus.id) as submenus_count, count(distinct dishes.id) as dishes_count from menus
+            LEFT JOIN submenus ON menus.id = submenus.menu_id
+            LEFT JOIN dishes ON submenus.id = dishes.submenu_id
+            where menus.id = :id
+            group by menus.id
+            ORDER BY menus.id'''
+        ), {'id': menu_id})
+        menu_data = res.mappings().fetchone()
 
-        _ = await self.db.execute(stmt)
-        res = _.unique().fetchall()
-
-        if res:
-            menu, submenus_count, dishes_count = res[0]
+        if menu_data:
             return {
-                'id': str(menu_id),
-                'title': menu.title,
-                'description': menu.description,
-                'submenus_count': submenus_count,
-                'dishes_count': dishes_count
+                'id': str(menu_data.id),
+                'title': menu_data.title,
+                'description': menu_data.description,
+                'submenus_count': menu_data.submenus_count,
+                'dishes_count': menu_data.dishes_count
             }
 
     async def create(self, title: str, description: str) -> dict[str, str]:
