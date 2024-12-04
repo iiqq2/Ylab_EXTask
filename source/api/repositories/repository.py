@@ -3,15 +3,10 @@ from decimal import Decimal
 from uuid import UUID
 
 from easy_profile import SessionProfiler
-from sqlalchemy import delete, func, insert, outerjoin, select, text, update
+from sqlalchemy import delete, func, insert, select, text, update
 
 from config import producer
 from source.api.repositories.interfaces import BaseRepository
-from source.api.repositories.utils import (
-    add_dish_if_unique,
-    get_or_create_menu,
-    get_or_create_submenu,
-)
 from source.db.models import Dish, Menu, Submenu
 
 profiler = SessionProfiler()
@@ -93,37 +88,79 @@ class MenuRepository(BaseRepository):
             }
 
     async def create(self, title: str, description: str) -> dict[str, str]:
+        stmt = text('''
+        WITH first_insert AS (
+            INSERT INTO menus (title, description)
+            VALUES (:title, :description)
+            RETURNING id, title, description
+        )
+        INSERT INTO deferred_tasks (topic, key, value, created_at)
+        SELECT
+            'menu_topic' AS topic,
+            id AS key,
+            json_build_object('action', 'create','menu_id', id, 'title', title, 'description', description) AS value,
+            now() as created_at
+
+        FROM first_insert
+        RETURNING value->>'menu_id' as menu_id
+        ''')
         async with self.db.begin():
-            stmt = insert(self.model).values(title=title, description=description).returning(self.model.id)
-            res = await self.db.execute(stmt)
-            new_menu_id = str(res.scalar_one())
-            producer.produce('menu_topic', key=new_menu_id, value=json.dumps(
-                {'id': new_menu_id, 'title': title, 'description': description}).encode('utf-8'))
-        return {'id': new_menu_id, 'title': title, 'description': description}
+            res = await self.db.execute(stmt, {'title': title, 'description': description})
+        new_menu_id = res.mappings().fetchone()['menu_id']
+        return {'id': str(new_menu_id), 'title': title, 'description': description}
 
     async def update(self, id: UUID, title: str | None, description: str | None) -> dict[str, str] | None:
+        stmt = text('''
+        WITH updated_menu AS (
+        UPDATE menus
+        SET
+            title = :title,
+            description = :description
+        WHERE id = :id
+        RETURNING id, title, description
+        )
+        INSERT INTO deferred_tasks (topic, key, value, created_at)
+        SELECT
+            'menu_topic' AS topic,
+            updated_menu.id AS key,
+            json_build_object(
+                'action', 'update',
+                'menu_id', updated_menu.id,
+                'title', updated_menu.title,
+                'description', updated_menu.description
+            ) AS value,
+            now() as created_at
+        FROM updated_menu
+        RETURNING value
+        ''')
         async with self.db.begin():
-            values = {}
-            if title:
-                values['title'] = title
-            if description:
-                values['description'] = description
-            if values:
-                stmt = update(self.model).where(self.model.id == id).values(
-                    **values).returning(self.model.title, self.model.description)
-                res = await self.db.execute(stmt)
-                updated_values = res.fetchone()
-            producer.produce('menu_topic', key=str(id), value=json.dumps(
-                {'id': str(id), 'title': updated_values.title, 'description': updated_values.description}).encode('utf-8'))
-        return {'id': str(id), 'title': updated_values.title, 'description': updated_values.description}
+            res = await self.db.execute(stmt, {'id': id, 'title': title, 'description': description})
+        updated_values = res.mappings().fetchone()['value']
+
+        return {'id': updated_values['menu_id'], 'title': updated_values['title'], 'description': updated_values['description']}
 
     async def delete(self, id: UUID) -> dict[str, str] | None:
+        stmt = text('''
+        with deleted_menu as (delete from menus where id = :id returning id, title, description)
+        insert into deferred_tasks (topic, key, value, created_at)
+        select
+            'menu_topic' as topic,
+            deleted_menu.id as key,
+            json_build_object(
+                'action', 'delete',
+                'menu_id', deleted_menu.id,
+                'title', deleted_menu.title,
+                'description', deleted_menu.description
+            ) AS value,
+            now() AS created_at
+        from deleted_menu
+        returning value
+        ''')
         async with self.db.begin():
-            stmt = delete(self.model).where(self.model.id == id).returning(self.model.title, self.model.description)
-            res = await self.db.execute(stmt)
-            deleted_values = res.fetchone()
-            producer.produce('menu_topic', key=str(id), value=None)
-        return {'id': str(id), 'title': deleted_values.title, 'description': deleted_values.description}
+            res = await self.db.execute(stmt, {'id': id})
+        deleted_values = res.mappings().fetchone()['value']
+
+        return {'id': deleted_values['menu_id'], 'title': deleted_values['title'], 'description': deleted_values['description']}
 
 
 class SubMenuRepository(BaseRepository):
